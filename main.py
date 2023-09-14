@@ -1,8 +1,11 @@
 import argparse
 from datetime import datetime
 
+from torch.utils.data import DataLoader
+
 from dataset import *
 from data_utils import *
+from utils import *
 
 
 def config():
@@ -51,8 +54,21 @@ def config():
 if __name__ == "__main__":
     args = config()
     
+    set_seed(args)
+    
     train_ds = CIFAR10Dataset(args, train=True, transform=Normalize(args.norm_mean, args.norm_stdev))
     test_ds = CIFAR10Dataset(args, train=False, transform=Normalize(args.norm_mean, args.norm_stdev))
     
-    train_data, train_label = train_ds[0]
-    print(train_data)
+    train_loader = DataLoader(
+        dataset=train_ds,
+        batch_size=args.train_batch_size,
+        shuffle=True,
+        collate_fn=custom_collator
+    )
+    
+    test_loader = DataLoader(
+        dataset=test_ds,
+        batch_size=args.test_batch_size,
+        shuffle=False,
+        collate_fn=custom_collator
+    )
