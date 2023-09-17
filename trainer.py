@@ -38,16 +38,14 @@ class Trainer:
         self.valid_writer = SummaryWriter(log_dir=os.path.join(args.save_dir, 'log/valid'))
         self.best_loss = 100000000000
     
-    
     def update_tensorboard(self, loss, mode="train"):
         if mode == "train":
             self.train_writer.add_scalar("Loss/train", loss, self.steps)
         elif mode == "valid":
             self.valid_writer.add_scalar("Loss/valid", loss, self.steps)
     
-    
     def valid(self):
-        loss_records = []
+        total_loss = 0
         test_loader = DataLoader(
             dataset=self.test_ds,
             batch_size=self.test_batch_size,
@@ -57,14 +55,14 @@ class Trainer:
         
         self.model.eval() # eval mode
         with torch.no_grad():
-            for step, batch in enumerate(test_loader, 1):
+            for batch in test_loader:
                 batch = [b.to(self.device) for b in batch]
                 image, _ = batch
                 y_pred = self.model(image)
                 loss = self.loss_func(y_pred, image)
-                loss_records.append(loss.detach().cpu().item())
+                total_loss += loss.detach().cpu().item()
                 
-        average_loss = sum(loss_records) / len(loss_records)
+        average_loss = total_loss / len(self.test_ds)
         
         self.update_tensorboard(
             loss=average_loss,
@@ -82,7 +80,6 @@ class Trainer:
                 "optimizer_state_dict": self.optimizer.state_dict(),
                 "loss": average_loss
             }, os.path.join(self.args.save_dir, 'best-model.ckpt'))
-    
     
     def train(self):
         self.model.train()

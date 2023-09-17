@@ -54,24 +54,3 @@ class CIFAR10Dataset(Dataset):
     
     def __len__(self):
         return len(self.labels)
-    
-    
-class EvalDataset:
-    def __init__(
-        self,
-        args,
-        root: str,
-        transform: Optional[Callable] = None
-    ):
-        self.args = args
-        self.data_list = [os.path.join(root, image_file_name) for image_file_name in os.listdir(root)]
-        self.transform = transform
-        
-    def __getitem__(self, idx: int) -> Any:
-        data = self.data_list[idx]
-        if self.transform is not None:
-            data = self.transform(self.args, data)
-        return data
-    
-    def __len__(self) -> int:
-        return len(self.data_list)
