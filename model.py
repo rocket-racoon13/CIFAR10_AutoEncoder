@@ -15,8 +15,8 @@ class AutoEncoder(nn.Module):
                     in_channels=self.channels[i],
                     out_channels=self.channels[i+1],
                     kernel_size=self.args.kernel_size[i],
-                    stride=self.args.stride[i],
-                    padding=self.args.padding[i]
+                    stride=self.args.enc_stride[i],
+                    padding=self.args.enc_padding[i]
                 )
             )
             self.encoder.append(nn.ReLU())
@@ -28,13 +28,15 @@ class AutoEncoder(nn.Module):
                     in_channels=self.channels[-i],
                     out_channels=self.channels[-(i+1)],
                     kernel_size=self.args.kernel_size[-i],
-                    stride=self.args.stride[-i],
-                    padding=self.args.stride[-i]
+                    stride=self.args.dec_stride[(i-1)],
+                    padding=self.args.dec_padding[(i-1)]
                 )
             )
             self.decoder.append(nn.ReLU())
         
     def forward(self, x):
-        x = self.encoder(x)
-        x = self.decoder(x)
+        for layer in self.encoder:
+            x = layer(x)
+        for layer in self.decoder:
+            x = layer(x)
         return x
